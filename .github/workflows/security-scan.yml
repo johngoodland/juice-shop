@@ -3,35 +3,36 @@ name: CI with SAST (Semgrep)
 on:
   push:
     branches: [ "main", "master" ]
-  pull_request:
-  workflow_dispatch: # Optional: run workflow option
+  pull_request: {}
+  workflow_dispatch: {}
 
 jobs:
   build-and-scan:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
 
-    - name: Install dependencies
-      run: npm install
+      - name: Install dependencies
+        run: npm install
 
-    - name: Build application
-      run: npm run build --if-present || true
+      - name: Build application
+        run: npm run build --if-present || true
 
-# Optional: List all files to ensure Semgrep sees them
-    - name: List repository files
-      run: ls -R
+      # Optional: List all files to ensure Semgrep sees them
+      - name: List repository files
+        run: ls -R
 
-# run semgrep SAST scan
-    - name: Run Semgrep SAST scan
-      uses: semgrep/semgrep-action@v1
-      with:
-        config: "p/owasp-top-ten,security/secrets"
-      continue-on-error: true
+      # Run Semgrep SAST scan
+      - name: Run Semgrep SAST scan
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: "p/owasp-top-ten,security/secrets"
+          # Stop the workflow if HIGH severity findings are detected
+          fail-on: "high"  
