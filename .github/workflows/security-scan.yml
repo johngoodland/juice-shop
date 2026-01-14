@@ -39,7 +39,7 @@ jobs:
         with:
           config: |
             p/owasp-top-ten
-          fail-on: "high"   # Fail workflow on high-severity findings
+        args: --fail-on=high   # Fail workflow on high-severity findings
 
       # Summarise findings in Actions UI
       - name: Summarize Semgrep Findings
