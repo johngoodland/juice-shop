@@ -41,7 +41,7 @@ jobs:
       - name: Run Semgrep SAST scan
         run: |
           # Run scan with OWASP Top Ten + local demo rules if present
-          semgrep scan --config p/owasp-top-ten --config .semgrep.yml . || exit 1
+          semgrep scan --config p/owasp-top-ten . || exit 1
 
       # 8️⃣ Summarize findings in GitHub Actions UI
       - name: Summarize Semgrep Findings
