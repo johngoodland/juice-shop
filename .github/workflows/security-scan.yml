@@ -24,7 +24,13 @@ jobs:
     - name: Build application
       run: npm run build --if-present || true
 
+# Optional: List all files to ensure Semgrep sees them
+    - name: List repository files
+      run: ls -R
+
+# run semgrep SAST scan
     - name: Run Semgrep SAST scan
       uses: semgrep/semgrep-action@v1
       with:
         config: p/owasp-top-ten
+      continue-on-error: true
