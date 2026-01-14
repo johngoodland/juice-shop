@@ -35,7 +35,7 @@ jobs:
 
       # Run Semgrep SAST scan
       - name: Run Semgrep SAST scan
-        uses: semgrep/semgrep-action@v1
+        uses: returntocorp/semgrep-action@v2
         with:
           config: |
             p/owasp-top-ten
