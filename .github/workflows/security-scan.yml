@@ -33,5 +33,5 @@ jobs:
     - name: Run Semgrep SAST scan
       uses: semgrep/semgrep-action@v1
       with:
-        config: p/owasp-top-ten, security/secrets
+        config: "p/owasp-top-ten, security/secrets"
       continue-on-error: true
