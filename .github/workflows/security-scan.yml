@@ -4,47 +4,50 @@ on:
   push:
     branches: [ "main", "master" ]
   pull_request: {}
-  workflow_dispatch: {}
+  workflow_dispatch: {} # manual trigger for demos
 
 jobs:
   build-and-scan:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Checkout repo
+      # 1️⃣ Checkout repo
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # 2) Set up Node
+      # 2️⃣ Set up Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
 
-      # 3) Install dependencies
+      # 3️⃣ Install dependencies
       - name: Install dependencies
         run: npm install
 
-      # 4) Build app (optional)
+      # 4️⃣ Build application (optional if present)
       - name: Build application
         run: npm run build --if-present || true
 
-      # 5) List files (debug)
-      - name: List repo files
+      # 5️⃣ List repo files (debug)
+      - name: List repository files
         run: ls -R
 
-      # 6) Run Semgrep via Docker image
-      - name: Semgrep SAST scan
-        container:
-          image: semgrep/semgrep:latest
-        run: |
-          semgrep scan --config p/owasp-top-ten .
-        # note: by default `semgrep scan` returns non-zero on findings
+      # 6️⃣ Install Semgrep CLI
+      - name: Install Semgrep
+        run: pip install semgrep
 
-      # 7) Summary (optional)
+      # 7️⃣ Run Semgrep SAST scan (OWASP Top Ten + optional demo secret)
+      - name: Run Semgrep SAST scan
+        run: |
+          # Run scan with OWASP Top Ten + local demo rules if present
+          semgrep scan --config p/owasp-top-ten --config .semgrep.yml . || exit 1
+
+      # 8️⃣ Summarize findings in GitHub Actions UI
       - name: Summarize Semgrep Findings
         if: always()
         run: |
-          semgrep --json --quiet --config p/owasp-top-ten . \
+          echo "### Semgrep Scan Summary" >> $GITHUB_STEP_SUMMARY
+          semgrep --json --quiet --config p/owasp-top-ten --config .semgrep.yml . \
             | jq -r '.results[] | "- \(.check_id) | \(.path):\(.start.line) | \(.severity) | \(.extra.message)"' \
             >> $GITHUB_STEP_SUMMARY || true
