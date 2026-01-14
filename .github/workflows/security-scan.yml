@@ -4,47 +4,47 @@ on:
   push:
     branches: [ "main", "master" ]
   pull_request: {}
-  workflow_dispatch: {} # manual trigger for demo's only
+  workflow_dispatch: {}
 
 jobs:
   build-and-scan:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout repo
+      # 1) Checkout repo
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Set up Node.js
+      # 2) Set up Node
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
-      # Install dependencies
+      # 3) Install dependencies
       - name: Install dependencies
         run: npm install
 
-      # Build application (optional if present)
+      # 4) Build app (optional)
       - name: Build application
         run: npm run build --if-present || true
 
-      # List repo files (optional, ensures Semgrep sees all files)
-      - name: List repository files
+      # 5) List files (debug)
+      - name: List repo files
         run: ls -R
 
-      # Run Semgrep SAST scan
-      - name: Run Semgrep SAST scan
-        uses: returntocorp/semgrep-action@v2
-        with:
-          config: |
-            p/owasp-top-ten   # main rules pack
-            .semgrep.yml      # optional local rules for demo findings
-          fail-on: high
-
-      # Summarize findings in Actions UI
-      - name: Summarize Semgrep Findings
-        if: always()   # Run even if previous step fails
+      # 6) Run Semgrep via Docker image
+      - name: Semgrep SAST scan
+        container:
+          image: semgrep/semgrep:latest
         run: |
-          echo "### Semgrep Scan Summary" >> $GITHUB_STEP_SUMMARY
-          npx semgrep --json --quiet | jq -r '.results[] | "- \(.check_id) | \(.path):\(.start.line) | \(.severity) | \(.extra.message)"' >> $GITHUB_STEP_SUMMARY || true
+          semgrep scan --config p/owasp-top-ten .
+        # note: by default `semgrep scan` returns non-zero on findings
+
+      # 7) Summary (optional)
+      - name: Summarize Semgrep Findings
+        if: always()
+        run: |
+          semgrep --json --quiet --config p/owasp-top-ten . \
+            | jq -r '.results[] | "- \(.check_id) | \(.path):\(.start.line) | \(.severity) | \(.extra.message)"' \
+            >> $GITHUB_STEP_SUMMARY || true
