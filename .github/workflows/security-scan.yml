@@ -34,16 +34,18 @@ jobs:
         run: ls -R
 
       # Run Semgrep SAST scan
-      - name: Run Semgrep SAST scan
+     - name: Run Semgrep SAST scan
         uses: returntocorp/semgrep-action@v2
         with:
           config: |
-            p/owasp-top-ten
-        fail-on: high
+            p/owasp-top-ten   # main rules pack
+            .semgrep.yml      # optional local rules for demo findings
+          fail-on: high
 
-      # Summarise findings in Actions UI
+      # 7️⃣ Summarize findings in Actions UI
       - name: Summarize Semgrep Findings
         if: always()   # Run even if previous step fails
         run: |
           echo "### Semgrep Scan Summary" >> $GITHUB_STEP_SUMMARY
-          semgrep --json --quiet | jq -r '.results[] | "- \(.check_id) | \(.path):\(.start.line) | \(.severity) | \(.extra.message)"' >> $GITHUB_STEP_SUMMARY || true
+          npx semgrep --json --quiet | jq -r '.results[] | "- \(.check_id) | \(.path):\(.start.line) | \(.severity) | \(.extra.message)"' >> $GITHUB_STEP_SUMMARY || true
+
